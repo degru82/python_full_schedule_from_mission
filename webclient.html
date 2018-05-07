@@ -1,0 +1,95 @@
+<htm>
+
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> 
+        <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    </head>
+
+    <body>
+        <div id='app_vue'>
+            <h3>SERVICE REQUEST</h3>
+            <table border=1>
+                <tr>
+                    <th>PICKUP POINT</th>
+                    <th>DROPOFF POINT</th>
+                    <th># OF PASSENGERS</th>
+                </tr>
+                <tr>
+                    <td>
+                        <select v-model='pickupstop'>
+                            <option v-for='stop in stoppoints' :value='stop.stoppointId'>{{stop.stoppointId}}</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select v-model='dropoffstop'>
+                            <option v-for='stop in stoppoints' :value='stop.stoppointId'>{{stop.stoppointId}}</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type=text v-model='numofpassngr'/>
+                    </td>
+                </tr>
+            </table>
+            <input type="button" value="Request" @click="serviceReq"/>
+
+            <hr/>
+            <h3>TRNASIT SCHEDULE</h3>
+            <table>
+                <tr>
+                    <th>ROUT_LINK_ID</th>
+                    <th>STOPPOINT_ID</th>
+                    <th>VISIT_SEQ</th>
+                    <th>MISSION_ID</th>
+                    <th>PSNGR_CHANGE</th>
+                    <th>ACCUM_NUM_PSNGRS</th>
+                </tr>
+                <tr v-for="sched in schedules">
+                    <td>{{sched.routLinkId}}</td>
+                    <td>{{sched.stoppointId}}</td>
+                    <td>{{sched.visitSeq}}</td>
+                    <td>{{sched.mssnId}}</td>
+                    <td>{{sched.passngrChange}}</td>
+                    <td>{{sched.accumNumPassngr}}</td>
+                </tr>
+            </table>
+        </div>
+
+        <script>
+            var app_vue = new Vue({
+                el: '#app_vue',
+                data: {
+                    pickupstop: null,
+                    dropoffstop: null,
+                    numofpassngr: 0,
+                    stoppoints: [],
+                    schedules: [],
+                },
+                mounted: function() {
+                    axios.get('/stoppoints')
+                    .then(response => {
+                        this.stoppoints = response.data
+                    })
+                    axios.get('/schedule')
+                    .then(response => {
+                        console.log(response.data)
+                        this.schedules = response.data
+                    })
+                },
+                methods: {
+                    serviceReq: function() {
+                        servReq = {}
+                        servReq.from = this.pickupstop
+                        servReq.to = this.dropoffstop
+                        servReq.numofpassngr = this.numofpassngr
+                        axios.post('/servicereq', servReq)
+                        .then(response=>{
+                            this.schedules = response.data
+                        })
+                    },
+
+                },
+            })
+        </script>
+
+    </body>
+</htm>
